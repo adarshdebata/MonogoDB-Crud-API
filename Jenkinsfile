@@ -6,7 +6,6 @@ pipeline {
     environment {
         MONGO_URI = credentials('MONGO_URI')   // Fetch MONGO_URI from Jenkins credentials
         DB_NAME = credentials('DB_NAME')       // Fetch DB_NAME from Jenkins credentials
-        PORT = credentials('PORT')             // Fetch PORT from Jenkins credentials
     }
     stages {
         stage('Install Dependencies') {
