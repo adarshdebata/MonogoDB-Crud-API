@@ -6,6 +6,7 @@ pipeline {
     environment {
         MONGO_URI = credentials('MONGO_URI')   // Fetch MONGO_URI from Jenkins credentials
         DB_NAME = credentials('DB_NAME')       // Fetch DB_NAME from Jenkins credentials
+        JENKINS_ENV = 'true'  // Set a variable to prevent server from running
     }
     stages {
         stage('Install Dependencies') {
