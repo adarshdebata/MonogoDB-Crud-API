@@ -14,19 +14,18 @@ pipeline {
                 sh 'npm install'
             }
         }
-         stage('Run Playwright Tests') {
-            steps {
-                echo 'Running Playwright tests...'
-                sh 'npm test -- --forceExit'
-            }
-        }
         stage('Run Application') {
             steps {
                 echo 'Running the app in the background...'
                 sh 'nohup node server.js &'  
             }
         }
-      
+       stage('Run Playwright Tests') {
+            steps {
+                echo 'Running Playwright tests...'
+                sh 'npm test'
+            }
+        }
     }
     post {
         success {
