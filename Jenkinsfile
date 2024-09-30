@@ -20,6 +20,12 @@ pipeline {
                 sh 'nohup node server.js &'  
             }
         }
+       stage('Run Playwright Tests') {
+            steps {
+                echo 'Running Playwright tests...'
+                sh 'npm test'
+            }
+        }
     }
     post {
         success {
