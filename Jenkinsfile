@@ -14,20 +14,26 @@ pipeline {
                 sh 'npm install'
             }
         }
+       stage('Run Tests') {
+            steps {
+                echo 'Running Playwright tests...'
+                sh 'npx jest --forceExit'
+            }
+        }
+
         stage('Run Application') {
             steps {
                 echo 'Running the app in the background...'
                 sh 'nohup node server.js &'  
             }
         }
-       stage('Run Playwright Tests') {
-            steps {
-                echo 'Running Playwright tests...'
-                sh 'npm test'
-            }
-        }
+
     }
     post {
+        always {
+            echo 'Cleaning up...'
+            sh 'pkill -f "node server.js"' // Ensure the server is stopped
+        }
         success {
             echo 'Build completed successfully!'
         }
