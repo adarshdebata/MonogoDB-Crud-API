@@ -5,12 +5,15 @@ const connectDB = require("../configs/dbConfig");
 let createdTaskId;
 
 beforeAll(async () => {
-  await connectDB();
+    connectDB();
+});
+afterAll(async () => {
+    app.disable();
 });
 
 describe("Task Management API", () => {
-  // Test to create a new task
-  it("should create a new task", async () => {
+    // Test to create a new task
+    it("should create a new task", async () => {
     const res = await request(app).post("/tasks/create").send({
       title: "Test Task",
       description: "This is a test task",
@@ -58,3 +61,4 @@ describe("Task Management API", () => {
     expect(res.body).toHaveProperty("message", "Task Not Found");
   });
 });
+
