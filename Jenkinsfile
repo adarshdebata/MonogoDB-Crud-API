@@ -1,41 +1,86 @@
 pipeline {
     agent any
+
     tools {
         nodejs 'NodeJS'  // Refers to the NodeJS installation on Jenkins
     }
+
     environment {
-        MONGO_URI = credentials('MONGO_URI')   // Fetch MONGO_URI from Jenkins credentials
-        DB_NAME = credentials('DB_NAME')       // Fetch DB_NAME from Jenkins credentials
+        // fetch from Jenkins credentials
+        MONGO_URI = credentials('MONGO_URI') 
+        DB_NAME = credentials('DB_NAME')         
+        DOCKER_HUB_USER = credentials('dockerhub-username')  
+        DOCKER_HUB_TOKEN = credentials('dockerhub-access-token')  
     }
+
     stages {
+        stage('Clone Repository') {
+            steps {
+                git 'https://github.com/adarshdebata/MonogoDB-Crud-API.git' 
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
                 echo 'Installing Node.js dependencies...'
                 sh 'npm install'
             }
         }
-       stage('Run Tests') {
+
+        stage('Run Tests') {
             steps {
-                echo 'Running Playwright tests...'
-                sh 'npx jest --forceExit'
+                echo 'Running tests...'
+                sh 'npx jest --forceExit'  // Run tests (adjust if needed)
             }
         }
 
-        stage('Run Application') {
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    echo 'Building Docker image...'
+                    sh 'docker build -t mongodb-crud-nodejs .'  // Build Docker image using Dockerfile
+                }
+            }
+        }
+
+        stage('Login to DockerHub') {
+            steps {
+                script {
+                    echo 'Logging in to DockerHub...'
+                    sh """
+                    echo $DOCKER_HUB_TOKEN | docker login -u $DOCKER_HUB_USER --password-stdin
+                    """
+                }
+            }
+        }
+
+        stage('Push Docker Image to DockerHub') {
+            steps {
+                script {
+                    echo 'Tagging Docker image...'
+                    sh 'docker tag mongodb-crud-nodejs $DOCKER_HUB_USER/mongodb-crud-nodejs:latest'
+
+                    echo 'Pushing Docker image to DockerHub...'
+                    sh 'docker push $DOCKER_HUB_USER/mongodb-crud-nodejs:latest'
+                }
+            }
+        }
+
+        stage('Run Application (Optional)') {
             steps {
                 echo 'Running the app in the background...'
-                sh 'nohup node server.js &'  
+                sh 'nohup node server.js &'
             }
         }
-
     }
+
     post {
         always {
             echo 'Cleaning up...'
-            sh 'pkill -f "node server.js"' // Ensure the server is stopped
+            sh 'pkill -f "node server.js"' // Ensure the server is stopped after the build completes
         }
         success {
-            echo 'Build completed successfully!'
+            echo 'Build and Docker Push completed successfully!'
         }
         failure {
             echo 'Build failed!'
