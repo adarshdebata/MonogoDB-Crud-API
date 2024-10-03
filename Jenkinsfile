@@ -49,7 +49,7 @@ pipeline {
             steps {
                 script {
                     echo 'Building Docker image...'
-                    sh 'docker build -t mongodb-crud-nodejs .'  // Build Docker image using Dockerfile
+                    bash 'docker build -t mongodb-crud-nodejs .'  // Build Docker image using Dockerfile
                 }
             }
         }
