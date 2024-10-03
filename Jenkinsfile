@@ -30,16 +30,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 echo 'Running tests...'
-                sh 'npx jest --forceExit'  // Run tests (adjust if needed)
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    echo 'Building Docker image...'
-                    sh 'docker build -t mongodb-crud-nodejs .'  // Build Docker image using Dockerfile
-                }
+                sh 'npx jest --forceExit'  // Run test
             }
         }
 
@@ -50,6 +41,15 @@ pipeline {
                     sh """
                     echo $DOCKER_HUB_TOKEN | docker login -u $DOCKER_HUB_USER --password-stdin
                     """
+                }
+            }
+        }
+
+       stage('Build Docker Image') {
+            steps {
+                script {
+                    echo 'Building Docker image...'
+                    sh 'docker build -t mongodb-crud-nodejs .'  // Build Docker image using Dockerfile
                 }
             }
         }
