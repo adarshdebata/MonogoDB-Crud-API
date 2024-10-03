@@ -16,7 +16,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/adarshdebata/MonogoDB-Crud-API.git' 
+                 git branch: 'main', url: 'https://github.com/adarshdebata/MonogoDB-Crud-API.git' 
             }
         }
 
