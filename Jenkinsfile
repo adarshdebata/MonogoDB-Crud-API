@@ -81,6 +81,9 @@ pipeline {
         }
         success {
             echo 'Build and Docker Push completed successfully!'
+            mail to: "${EMAIL_RECIPIENTS}",
+                 subject: "Jenkins Build Successful: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                 body: "Good news! The build was successful. Check it out at: ${env.BUILD_URL}"
         }
         failure {
             echo 'Build failed!'
