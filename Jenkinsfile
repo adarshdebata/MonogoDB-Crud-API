@@ -27,10 +27,10 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
+        stage('Unit Test') {
             steps {
                 echo 'Running tests...'
-                sh 'npx jest --forceExit'  // Run test
+                sh 'npm test'  // Run test
             }
         }
 
