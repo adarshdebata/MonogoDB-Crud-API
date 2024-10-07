@@ -82,15 +82,23 @@ pipeline {
         }
         success {
             echo 'Build and Docker Push completed successfully!'
-            mail to: "${EMAIL_RECIPIENTS}",
-                 subject: "Jenkins Build Successful: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                 body: "Good news! The build was successful. Check it out at: ${env.BUILD_URL}"
+            // Send email notification securely
+            script {
+                def recipients = env.EMAIL_RECIPIENTS
+                def subject = "Jenkins Build Successful: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+                def body = "Good news! The build was successful. Check it out at: ${env.BUILD_URL}"
+                mail to: recipients, subject: subject, body: body
+            }
         }
         failure {
             echo 'Build failed!'
-            mail to: "${EMAIL_RECIPIENTS}",
-                 subject: "Jenkins Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                 body: "Unfortunately, the build failed. Please check the logs at: ${env.BUILD_URL}"
+            script {
+                def recipients = env.EMAIL_RECIPIENTS
+                def subject = "Jenkins Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+                def body = "Unfortunately, the build failed. Please check the logs at: ${env.BUILD_URL}"
+                mail to: recipients, subject: subject, body: body
+            }
+            
         }
     }
 }
