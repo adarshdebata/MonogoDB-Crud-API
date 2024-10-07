@@ -10,7 +10,8 @@ pipeline {
         MONGO_URI = credentials('MONGO_URI') 
         DB_NAME = credentials('DB_NAME')         
         DOCKER_HUB_USER = credentials('dockerhub-username')  
-        DOCKER_HUB_TOKEN = credentials('dockerhub-access-token')  
+        DOCKER_HUB_TOKEN = credentials('dockerhub-access-token') 
+        EMAIL_RECIPIENTS = 'adarshdebata00@gmail.com' 
     }
 
     stages {
@@ -74,16 +75,22 @@ pipeline {
         }
     }
 
-    post {
+      post {
         always {
             echo 'Cleaning up...'
             sh 'pkill -f "node server.js"' // Ensure the server is stopped after the build completes
         }
         success {
             echo 'Build and Docker Push completed successfully!'
+            mail to: "${EMAIL_RECIPIENTS}",
+                 subject: "Jenkins Build Successful: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                 body: "Good news! The build was successful. Check it out at: ${env.BUILD_URL}"
         }
         failure {
             echo 'Build failed!'
+            mail to: "${EMAIL_RECIPIENTS}",
+                 subject: "Jenkins Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                 body: "Unfortunately, the build failed. Please check the logs at: ${env.BUILD_URL}"
         }
     }
 }
