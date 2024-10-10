@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -11,7 +10,7 @@ pipeline {
         DB_NAME = credentials('DB_NAME')         
         DOCKER_HUB_USER = credentials('dockerhub-username')  
         DOCKER_HUB_TOKEN = credentials('dockerhub-access-token') 
-        EMAIL_RECIPIENTS = 'adarshdebata00@gmail.com' // Secure email recipients
+        EMAIL_RECIPIENTS = credentials('email-recipients')  // Secure email recipients
     }
 
     stages {
@@ -19,11 +18,9 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 script {
-                    // Request approval from User 2 and wait for approval with username shown
-                    echo "Waiting for User 2 (user2) to approve Clone Repository stage."
-                    def user2Approval = input message: 'Approve Clone Repository stage?', submitter: 'user2', 
-                        submitterParameter: 'approvedBy'  
-                    echo "Stage approved by: ${approvedBy}"  
+                    // Request approval from User 2 before cloning the repository.
+                    def user2Approval = input message: 'User 2: Approve Clone Repository stage?', submitter: 'user2'
+                    echo "Stage approved by User: ${user2Approval}"
                 }
                 echo 'Cloning repository...'
                 git branch: 'main', url: 'https://github.com/adarshdebata/MonogoDB-Crud-API.git'
@@ -59,11 +56,9 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Request approval from User 3 and wait for approval with username shown
-                    echo "Waiting for User 3 (user3) to approve Build Docker Image stage."
-                    def user3Approval = input message: 'User 3: Approve Build Docker Image stage?', submitter: 'user3', 
-                        submitterParameter: 'approvedBy'  // Capture the username of the approver
-                    echo "Stage approved by: ${approvedBy}"  // Displays the name of the user who approved it
+                    // Request approval from User 3 before building the Docker image.
+                    def user3Approval = input message: 'User 3: Approve Build Docker Image stage?', submitter: 'user3'
+                    echo "Stage approved by User: ${user3Approval}"
                 }
                 echo 'Building Docker image...'
                 sh 'docker build -t mongodb-crud-nodejs .'  // Build Docker image using Dockerfile
