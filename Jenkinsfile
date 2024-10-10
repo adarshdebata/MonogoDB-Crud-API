@@ -14,15 +14,12 @@ pipeline {
     }
 
     stages {
-        // Stage where aaditdebata must approve
+        // 1. User 2 needs to approve the "Clone Repository" stage.
         stage('Clone Repository') {
             steps {
                 script {
-                    // Input step for approval by User 1 (aaditdebata)
-                    def approval = input message: 'Approval needed for Clone Repository stage', 
-                                        submitter: 'aaditdebata',  // Only aaditdebata can approve
-                                        submitterParameter: 'APPROVER'
-                    echo "Approval for Clone Repository stage provided by: ${APPROVER}"
+                    // Request approval from User 2 before cloning the repository.
+                    input message: 'User 2: Approve Clone Repository stage?', submitter: 'user2'
                 }
                 echo 'Cloning repository...'
                 git branch: 'main', url: 'https://github.com/adarshdebata/MonogoDB-Crud-API.git'
@@ -54,15 +51,12 @@ pipeline {
             }
         }
 
-        // Stage where naruto must approve
+        // 2. User 3 needs to approve the "Build Docker Image" stage.
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Input step for approval by User 2 (naruto)
-                    def approval = input message: 'Approval needed for Build Docker Image stage', 
-                                        submitter: 'naruto',   // Only naruto can approve
-                                        submitterParameter: 'APPROVER'
-                    echo "Approval for Build Docker Image stage provided by: ${APPROVER}"
+                    // Request approval from User 3 before building the Docker image.
+                    input message: 'User 3: Approve Build Docker Image stage?', submitter: 'user3'
                 }
                 echo 'Building Docker image...'
                 sh 'docker build -t mongodb-crud-nodejs .'  // Build Docker image using Dockerfile
