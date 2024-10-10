@@ -63,7 +63,7 @@ pipeline {
                     echo "Approval for Build Docker Image stage provided by: ${APPROVER}"
                 }
                 echo 'Building Docker image...'
-                sh 'docker build -t mongodb-crud-nodejs .'  
+                sh 'docker build -t mongodb-crud-nodejs .'  /e
             }
         }
 
