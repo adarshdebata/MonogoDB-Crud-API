@@ -6,18 +6,24 @@ pipeline {
     }
 
     environment {
-        // fetch from Jenkins credentials
         MONGO_URI = credentials('MONGO_URI') 
         DB_NAME = credentials('DB_NAME')         
         DOCKER_HUB_USER = credentials('dockerhub-username')  
         DOCKER_HUB_TOKEN = credentials('dockerhub-access-token') 
-        EMAIL_RECIPIENTS = 'adarshdebata00@gmail.com' 
+        EMAIL_RECIPIENTS = credentials('email-recipients')  // Secure email recipients
     }
 
     stages {
+        // 1. User 2 needs to approve the "Clone Repository" stage.
         stage('Clone Repository') {
             steps {
-                 git branch: 'main', url: 'https://github.com/adarshdebata/MonogoDB-Crud-API.git' 
+                script {
+                    // Request approval from User 2 before cloning the repository.
+                    def user2Approval = input message: 'User 2: Approve Clone Repository stage?', submitter: 'user2'
+                    echo "Stage approved by User: ${user2Approval}"
+                }
+                echo 'Cloning repository...'
+                git branch: 'main', url: 'https://github.com/adarshdebata/MonogoDB-Crud-API.git'
             }
         }
 
@@ -31,7 +37,7 @@ pipeline {
         stage('Unit Test') {
             steps {
                 echo 'Running tests...'
-                sh 'npm test'  // Run test
+                sh 'npm test'  // Run tests
             }
         }
 
@@ -46,12 +52,16 @@ pipeline {
             }
         }
 
-       stage('Build Docker Image') {
+        // 2. User 3 needs to approve the "Build Docker Image" stage.
+        stage('Build Docker Image') {
             steps {
                 script {
-                    echo 'Building Docker image...'
-                    sh 'docker build -t mongodb-crud-nodejs .'  // Build Docker image using Dockerfile
+                    // Request approval from User 3 before building the Docker image.
+                    def user3Approval = input message: 'User 3: Approve Build Docker Image stage?', submitter: 'user3'
+                    echo "Stage approved by User: ${user3Approval}"
                 }
+                echo 'Building Docker image...'
+                sh 'docker build -t mongodb-crud-nodejs .'  // Build Docker image using Dockerfile
             }
         }
 
@@ -75,10 +85,10 @@ pipeline {
         }
     }
 
-      post {
+    post {
         always {
             echo 'Cleaning up...'
-            sh 'pkill -f "node server.js"' // Ensure the server is stopped after the build completes
+            sh 'pkill -f "node server.js"'  // Ensure the server is stopped after the build completes
         }
         success {
             echo 'Build and Docker Push completed successfully!'
@@ -92,6 +102,7 @@ pipeline {
         }
         failure {
             echo 'Build failed!'
+            // Send failure email notification
             script {
                 def recipients = env.EMAIL_RECIPIENTS
                 def subject = "Jenkins Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
