@@ -10,17 +10,19 @@ pipeline {
         DB_NAME = credentials('DB_NAME')         
         DOCKER_HUB_USER = credentials('dockerhub-username')  
         DOCKER_HUB_TOKEN = credentials('dockerhub-access-token') 
-        EMAIL_RECIPIENTS = 'adarshdebata00@gmail.com'
+        EMAIL_RECIPIENTS = credentials('email-recipients')  // Secure email recipients
     }
 
     stages {
-        // 1. User 2 needs to approve the "Clone Repository" stage.
+        // 1. User 2 must approve the "Clone Repository" stage.
         stage('Clone Repository') {
             steps {
                 script {
-                    // Request approval from User 2 before cloning the repository.
-                    def user2Approval = input message: 'User 2: Approve Clone Repository stage?', submitter: 'user2'
-                    echo "Stage approved by User: ${user2Approval}"
+                    
+                    def approval = input message: 'Approval needed for Clone Repository stage', 
+                                        submitter: 'aaditdebata',  
+                                        submitterParameter: 'APPROVER'
+                    echo "Approval for Clone Repository stage provided by: ${APPROVER}"
                 }
                 echo 'Cloning repository...'
                 git branch: 'main', url: 'https://github.com/adarshdebata/MonogoDB-Crud-API.git'
@@ -52,16 +54,16 @@ pipeline {
             }
         }
 
-        // 2. User 3 needs to approve the "Build Docker Image" stage.
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Request approval from User 3 before building the Docker image.
-                    def user3Approval = input message: 'User 3: Approve Build Docker Image stage?', submitter: 'user3'
-                    echo "Stage approved by User: ${user3Approval}"
+                    def approval = input message: 'Approval needed for Build Docker Image stage', 
+                                        submitter: 'naruto',   
+                                        submitterParameter: 'APPROVER'
+                    echo "Approval for Build Docker Image stage provided by: ${APPROVER}"
                 }
                 echo 'Building Docker image...'
-                sh 'docker build -t mongodb-crud-nodejs .'  // Build Docker image using Dockerfile
+                sh 'docker build -t mongodb-crud-nodejs .'  
             }
         }
 
