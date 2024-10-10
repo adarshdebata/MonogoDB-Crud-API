@@ -21,9 +21,9 @@ pipeline {
                 script {
                     // Request approval from User 2 and wait for approval with username shown
                     echo "Waiting for User 2 (user2) to approve Clone Repository stage."
-                    def user2Approval = input message: 'User 2: Approve Clone Repository stage?', submitter: 'user2', 
-                        submitterParameter: 'approvedBy'  // Capture the username of the approver
-                    echo "Stage approved by: ${approvedBy}"  // Displays the name of the user who approved it
+                    def user2Approval = input message: 'Approve Clone Repository stage?', submitter: 'user2', 
+                        submitterParameter: 'approvedBy'  
+                    echo "Stage approved by: ${approvedBy}"  
                 }
                 echo 'Cloning repository...'
                 git branch: 'main', url: 'https://github.com/adarshdebata/MonogoDB-Crud-API.git'
