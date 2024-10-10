@@ -19,7 +19,7 @@ pipeline {
             steps {
                 script {
                     // Request approval from User 2 before cloning the repository.
-                    input message: 'User 2: Approve Clone Repository stage?', submitter: 'user2'
+                    input message: 'User 2: Approve Clone Repository stage?', submitter: 'aaditdebata'
                 }
                 echo 'Cloning repository...'
                 git branch: 'main', url: 'https://github.com/adarshdebata/MonogoDB-Crud-API.git'
