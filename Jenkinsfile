@@ -10,7 +10,7 @@ pipeline {
         DB_NAME = credentials('DB_NAME')         
         DOCKER_HUB_USER = credentials('dockerhub-username')  
         DOCKER_HUB_TOKEN = credentials('dockerhub-access-token') 
-        EMAIL_RECIPIENTS = credentials('email-recipients')  // Secure email recipients
+        EMAIL_RECIPIENTS = 'adarshdebata00@gmail.com'  // Secure email recipients
     }
 
     stages {
@@ -63,7 +63,7 @@ pipeline {
                     echo "Approval for Build Docker Image stage provided by: ${APPROVER}"
                 }
                 echo 'Building Docker image...'
-                sh 'docker build -t mongodb-crud-nodejs .'  /e
+                sh 'docker build -t mongodb-crud-nodejs .'  
             }
         }
 
