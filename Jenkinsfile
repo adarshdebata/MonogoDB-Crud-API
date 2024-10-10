@@ -10,17 +10,17 @@ pipeline {
         DB_NAME = credentials('DB_NAME')         
         DOCKER_HUB_USER = credentials('dockerhub-username')  
         DOCKER_HUB_TOKEN = credentials('dockerhub-access-token') 
-        EMAIL_RECIPIENTS = 'adarshdebata00@gmail.com'  // Secure email recipients
+        EMAIL_RECIPIENTS = 'adarshdebata00@gmail.com'
     }
 
     stages {
-        // 1. User 2 must approve the "Clone Repository" stage.
+        // Stage where aaditdebata must approve
         stage('Clone Repository') {
             steps {
                 script {
-                    
+                    // Input step for approval by User 1 (aaditdebata)
                     def approval = input message: 'Approval needed for Clone Repository stage', 
-                                        submitter: 'aaditdebata',  
+                                        submitter: 'aaditdebata',  // Only aaditdebata can approve
                                         submitterParameter: 'APPROVER'
                     echo "Approval for Clone Repository stage provided by: ${APPROVER}"
                 }
@@ -54,16 +54,18 @@ pipeline {
             }
         }
 
+        // Stage where naruto must approve
         stage('Build Docker Image') {
             steps {
                 script {
+                    // Input step for approval by User 2 (naruto)
                     def approval = input message: 'Approval needed for Build Docker Image stage', 
-                                        submitter: 'naruto',   
+                                        submitter: 'naruto',   // Only naruto can approve
                                         submitterParameter: 'APPROVER'
                     echo "Approval for Build Docker Image stage provided by: ${APPROVER}"
                 }
                 echo 'Building Docker image...'
-                sh 'docker build -t mongodb-crud-nodejs .'  
+                sh 'docker build -t mongodb-crud-nodejs .'  // Build Docker image using Dockerfile
             }
         }
 
