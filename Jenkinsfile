@@ -56,7 +56,7 @@ pipeline {
             steps {
                 script {
                     // Request approval from User 3 before building the Docker image.
-                    input message: 'User 3: Approve Build Docker Image stage?', submitter: 'user3'
+                    input message: 'User 3: Approve Build Docker Image stage?', submitter: 'naruto'
                 }
                 echo 'Building Docker image...'
                 sh 'docker build -t mongodb-crud-nodejs .'  // Build Docker image using Dockerfile
