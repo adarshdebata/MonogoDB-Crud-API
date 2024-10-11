@@ -1,92 +1,111 @@
-node {
-    // Ensure Node.js tool is available
-    def nodeHome = tool name: 'NodeJS', type: 'NodeJSInstallation'
+pipeline {
+    agent any
 
-    // Tools and environment variables setup
-    def mongoUri = credentials('MONGO_URI')
-    def dbName = credentials('DB_NAME')
-    def dockerHubUser = credentials('dockerhub-username')
-    def dockerHubToken = credentials('dockerhub-access-token')
-    def emailRecipients = 'adarshdebata00@gmail.com'
+    tools {
+        nodejs 'NodeJS'  // Refers to the NodeJS installation on Jenkins
+    }
 
-    try {
-        // Set Node.js path
-        env.PATH = "${nodeHome}/bin:${env.PATH}"
+    environment {
+        MONGO_URI = credentials('MONGO_URI') 
+        DB_NAME = credentials('DB_NAME')         
+        DOCKER_HUB_USER = credentials('dockerhub-username')  
+        DOCKER_HUB_TOKEN = credentials('dockerhub-access-token') 
+        EMAIL_RECIPIENTS = 'adarshdebata00@gmail.com'
+    }
 
-        // Clone Repository Stage - Requires approval from User 2
+    stages {
+        // 1. User 2 needs to approve the "Clone Repository" stage.
         stage('Clone Repository') {
-            def approval = input message: "Waiting for approval from User 2 (aaditdebata) or Admin", 
-                                 submitter: 'aaditdebata'
-            echo "Approval provided by: ${approval}"
-
-            echo 'Cloning repository...'
-            git branch: 'main', url: 'https://github.com/adarshdebata/MonogoDB-Crud-API.git'
+            steps {
+                script {
+                    // Request approval from User 2 before cloning the repository.
+                    input message: 'User 2: Approve Clone Repository stage?', submitter: 'aaditdebata'
+                }
+                echo 'Cloning repository...'
+                git branch: 'main', url: 'https://github.com/adarshdebata/MonogoDB-Crud-API.git'
+            }
         }
 
-        // Install Dependencies
         stage('Install Dependencies') {
-            echo 'Installing Node.js dependencies...'
-            sh 'npm install'
+            steps {
+                echo 'Installing Node.js dependencies...'
+                sh 'npm install'
+            }
         }
 
-        // Unit Test
         stage('Unit Test') {
-            echo 'Running tests...'
-            sh 'npm test'
+            steps {
+                echo 'Running tests...'
+                sh 'npm test'  // Run tests
+            }
         }
 
-        // Login to DockerHub
         stage('Login to DockerHub') {
-            echo 'Logging in to DockerHub...'
-            sh """
-                echo ${dockerHubToken} | docker login -u ${dockerHubUser} --password-stdin
-            """
+            steps {
+                script {
+                    echo 'Logging in to DockerHub...'
+                    sh """
+                    echo $DOCKER_HUB_TOKEN | docker login -u $DOCKER_HUB_USER --password-stdin
+                    """
+                }
+            }
         }
 
-        // Build Docker Image - Requires approval from User 3
+        // 2. User 3 needs to approve the "Build Docker Image" stage.
         stage('Build Docker Image') {
-            def approval = input message: "Waiting for approval from User 3 (naruto) or Admin", 
-                                 submitter: 'naruto'
-            echo "Approval provided by: ${approval}"
-
-            echo 'Building Docker image...'
-            sh 'docker build -t mongodb-crud-nodejs .'
+            steps {
+                script {
+                    // Request approval from User 3 before building the Docker image.
+                    input message: 'User 3: Approve Build Docker Image stage?', submitter: 'naruto'
+                }
+                echo 'Building Docker image...'
+                sh 'docker build -t mongodb-crud-nodejs .'  // Build Docker image using Dockerfile
+            }
         }
 
-        // Push Docker Image to DockerHub
         stage('Push Docker Image to DockerHub') {
-            echo 'Tagging Docker image...'
-            sh "docker tag mongodb-crud-nodejs ${dockerHubUser}/mongodb-crud-nodejs:latest"
+            steps {
+                script {
+                    echo 'Tagging Docker image...'
+                    sh 'docker tag mongodb-crud-nodejs $DOCKER_HUB_USER/mongodb-crud-nodejs:latest'
 
-            echo 'Pushing Docker image to DockerHub...'
-            sh "docker push ${dockerHubUser}/mongodb-crud-nodejs:latest"
+                    echo 'Pushing Docker image to DockerHub...'
+                    sh 'docker push $DOCKER_HUB_USER/mongodb-crud-nodejs:latest'
+                }
+            }
         }
 
-        // Run Application (Optional)
         stage('Run Application (Optional)') {
-            echo 'Running the app in the background...'
-            sh 'nohup node server.js &'
+            steps {
+                echo 'Running the app in the background...'
+                sh 'nohup node server.js &'
+            }
         }
+    }
 
-    } catch (Exception e) {
-        // Handle failures
-        currentBuild.result = "FAILURE"
-        echo "Build failed: ${e.getMessage()}"
-        mail to: emailRecipients,
-             subject: "Jenkins Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-             body: "Unfortunately, the build failed. Please check the logs at: ${env.BUILD_URL}"
-        throw e
-    } finally {
-        // Cleanup and send notifications
-        stage('Post Build Cleanup') {
+    post {
+        always {
             echo 'Cleaning up...'
-            sh 'pkill -f "node server.js"'
-
-            if (currentBuild.result == "SUCCESS") {
-                echo 'Build and Docker Push completed successfully!'
-                mail to: emailRecipients,
-                     subject: "Jenkins Build Successful: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                     body: "Good news! The build was successful. Check it out at: ${env.BUILD_URL}"
+            sh 'pkill -f "node server.js"'  // Ensure the server is stopped after the build completes
+        }
+        success {
+            echo 'Build and Docker Push completed successfully!'
+            // Send email notification securely
+            script {
+                def recipients = env.EMAIL_RECIPIENTS
+                def subject = "Jenkins Build Successful: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+                def body = "Good news! The build was successful. Check it out at: ${env.BUILD_URL}"
+                mail to: recipients, subject: subject, body: body
+            }
+        }
+        failure {
+            echo 'Build failed!'
+            // Send failure email notification
+            script {
+                def recipients = env.EMAIL_RECIPIENTS
+                def subject = "Jenkins Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+                def body = "Unfortunately, the build failed. Please check the logs at: ${env.BUILD_URL}"
+                mail to: recipients, subject: subject, body: body
             }
         }
     }
