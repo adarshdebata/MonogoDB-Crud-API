@@ -29,7 +29,7 @@ node {
         // 3. Unit Test Stage
         stage('Unit Test') {
             echo 'Running tests...'
-            sh 'npm test'
+            sh 'npm test -- --forceExit'
         }
 
         // 4. Login to DockerHub Stage
