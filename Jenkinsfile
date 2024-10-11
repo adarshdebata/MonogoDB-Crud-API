@@ -3,23 +3,19 @@ node {
     def nodeHome = tool name: 'NodeJS'
 
     // Setup environment variables
-    def mongoUri = credentials('MONGO_URI')
-    def dbName = credentials('DB_NAME')
-    def dockerHubUser = credentials('dockerhub-username')
-    def dockerHubToken = credentials('dockerhub-access-token')
+    def MONGO_URI = credentials('MONGO_URI')
+    def DB_NAME = credentials('DB_NAME')
+    def DOCKER_HUB_USER = credentials('dockerhub-username')
+    def DOCKER_HUB_TOKEN = credentials('dockerhub-access-token')
     def emailRecipients = 'adarshdebata00@gmail.com'
 
     try {
-        // Set Node.js path
         env.PATH = "${nodeHome}/bin:${env.PATH}"
 
-        // 1. Clone Repository Stage
         stage('Clone Repository') {
             // Request approval from User 2
-            def inputApproval = input message: 'User 2: Approve Clone Repository stage?', 
-                                        submitter: 'aaditdebata'
-            echo "Approval received from: ${inputApproval}"
-
+            def inputApproval = input message: 'User 2: Approve Clone Repository stage?', submitter: 'aaditdebata'
+            
             echo 'Cloning repository...'
             git branch: 'main', url: 'https://github.com/adarshdebata/MonogoDB-Crud-API.git'
         }
@@ -40,17 +36,15 @@ node {
         stage('Login to DockerHub') {
             echo 'Logging in to DockerHub...'
             sh """
-                echo ${dockerHubToken} | docker login -u ${dockerHubUser} --password-stdin
+                echo ${DOCKER_HUB_TOKEN} | docker login -u ${DOCKER_HUB_USER} --password-stdin
             """
         }
 
         // 5. Build Docker Image Stage
         stage('Build Docker Image') {
             // Request approval from User 3
-            def inputApproval = input message: 'User 3: Approve Build Docker Image stage?', 
-                                        submitter: 'naruto'
-            echo "Approval received from: ${inputApproval}"
-
+            def inputApproval = input message: 'User 3: Approve Build Docker Image stage?', submitter: 'naruto'
+          
             echo 'Building Docker image...'
             sh 'docker build -t mongodb-crud-nodejs .'
         }
@@ -58,10 +52,10 @@ node {
         // 6. Push Docker Image to DockerHub Stage
         stage('Push Docker Image to DockerHub') {
             echo 'Tagging Docker image...'
-            sh "docker tag mongodb-crud-nodejs ${dockerHubUser}/mongodb-crud-nodejs:latest"
+            sh 'docker tag mongodb-crud-nodejs ${DOCKER_HUB_USER}/mongodb-crud-nodejs:latest'
 
             echo 'Pushing Docker image to DockerHub...'
-            sh "docker push ${dockerHubUser}/mongodb-crud-nodejs:latest"
+            sh 'docker push ${DOCKER_HUB_USER}/mongodb-crud-nodejs:latest'
         }
 
         // 7. Run Application Stage (Optional)
@@ -74,7 +68,6 @@ node {
         // Handle build failure
         currentBuild.result = 'FAILURE'
         echo "Build failed: ${e.getMessage()}"
-        // Send failure email notification
         mail to: emailRecipients,
              subject: "Jenkins Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
              body: "Unfortunately, the build failed. Please check the logs at: ${env.BUILD_URL}"
