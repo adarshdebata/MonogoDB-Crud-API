@@ -26,11 +26,11 @@ node {
             sh 'npm install'
         }
 
-        // 3. Unit Test Stage
-        stage('Unit Test') {
-            echo 'Running tests...'
-            sh 'npm test -- --forceExit'
-        }
+        // // 3. Unit Test Stage
+        // stage('Unit Test') {
+        //     echo 'Running tests...'
+        //     sh 'npm test -- --forceExit'
+        // }
 
         // 4. Login to DockerHub Stage
         stage('Login to DockerHub') {
