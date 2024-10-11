@@ -1,4 +1,7 @@
 node {
+    // Ensure Node.js tool is available
+    def nodeHome = tool name: 'NodeJS', type: 'NodeJSInstallation'
+
     // Tools and environment variables setup
     def mongoUri = credentials('MONGO_URI')
     def dbName = credentials('DB_NAME')
@@ -7,6 +10,9 @@ node {
     def emailRecipients = 'adarshdebata00@gmail.com'
 
     try {
+        // Set Node.js path
+        env.PATH = "${nodeHome}/bin:${env.PATH}"
+
         // Clone Repository Stage - Requires approval from User 2
         stage('Clone Repository') {
             def approval = input message: "Waiting for approval from User 2 (aaditdebata) or Admin", 
